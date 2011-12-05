@@ -739,8 +739,8 @@ setup_differ_info(zfs_handle_t *zhp, const char *fromsnap,
 	if (get_mountpoints(di) != 0)
 		return (-1);
 
-	if (find_shares_object(di) != 0)
-		return (-1);
+	//if (find_shares_object(di) != 0)
+	//	return (-1);
 
 	return (0);
 }
