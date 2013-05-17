@@ -33,6 +33,8 @@
 #include <sys/zio.h>
 #include <sys/fs/zfs.h>
 
+int zfs_vdev_mirror_pending_balance = 0;
+
 /*
  * Virtual device vector for mirroring.
  */
@@ -221,7 +223,10 @@ vdev_mirror_child_select(zio_t *zio)
 	mirror_map_t *mm = zio->io_vsd;
 	mirror_child_t *mc;
 	uint64_t txg = zio->io_txg;
+	int pending_lowest_child = -1;
+	uint64_t pending_lowest_count = UINT64_MAX;
 	int i, c;
+	uint64_t pending;
 
 	ASSERT(zio->io_bp == NULL || BP_PHYSICAL_BIRTH(zio->io_bp) == txg);
 
@@ -243,11 +248,34 @@ vdev_mirror_child_select(zio_t *zio)
 			continue;
 		}
 		if (!vdev_dtl_contains(mc->mc_vd, DTL_MISSING, txg, 1))
-			return (c);
+		{
+			if (!zfs_vdev_mirror_pending_balance)	/* balance disabled */
+				return (c);
+			pending = vdev_pending_queued(mc->mc_vd);
+			if (pending == 0) {
+				return (c);
+			}
+			if (pending < pending_lowest_count) {
+				pending_lowest_count = pending;
+				pending_lowest_child = c;
+			}
+			else if (pending == pending_lowest_count) {
+				if ( c == mm->mm_preferred)
+					pending_lowest_child = c;
+			}
+			continue;
+		}
 		mc->mc_error = ESTALE;
 		mc->mc_skipped = 1;
 		mc->mc_speculative = 1;
 	}
+
+	/*
+	 * See if we found multiple devices with pending io's
+	 * and return the child with smallest queue.
+	 */
+	if ( pending_lowest_child != -1 )
+		return (pending_lowest_child);
 
 	/*
 	 * Every device is either missing or has this txg in its DTL.
@@ -492,3 +520,8 @@ vdev_ops_t vdev_spare_ops = {
 	VDEV_TYPE_SPARE,	/* name of this vdev type */
 	B_FALSE			/* not a leaf vdev */
 };
+
+#if defined(_KERNEL) && defined(HAVE_SPL)
+module_param(zfs_vdev_mirror_pending_balance, int, 0644);
+MODULE_PARM_DESC(zfs_vdev_mirror_pending_balance, "Balance reads from mirror vdev based on member speed and pending queue depth");
+#endif
