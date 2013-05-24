@@ -1948,18 +1948,19 @@ vdev_resilver_needed(vdev_t *vd, uint64_t *minp, uint64_t *maxp)
 	return (needed);
 }
 
-int
+uint64_t
 vdev_pending_queued(vdev_t *vd)
 {
 	int pending;
 
 	vdev_queue_t *vq = &vd->vdev_queue;
+	vdev_stat_t *vs = &vd->vdev_stat;'
 
 	mutex_enter(&vq->vq_lock);
 	pending = avl_numnodes(&vq->vq_pending_tree);
 	mutex_exit(&vq->vq_lock);
 
-	return pending;
+	return (pending * (&vs->vs_request_time_average >> 8))
 }
 
 void
