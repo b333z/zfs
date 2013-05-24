@@ -226,7 +226,8 @@ vdev_mirror_child_select(zio_t *zio)
 	uint64_t txg = zio->io_txg;
 	int pending_lowest_child = -1;
 	int pending_lowest_count = INT_MAX;
-	int i, c, pending;
+	int i, c;
+	uint64_t pending;
 
 	ASSERT(zio->io_bp == NULL || BP_PHYSICAL_BIRTH(zio->io_bp) == txg);
 
