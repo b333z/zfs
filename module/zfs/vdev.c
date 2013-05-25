@@ -1960,7 +1960,7 @@ vdev_pending_queued(vdev_t *vd)
 	pending = avl_numnodes(&vq->vq_pending_tree);
 	mutex_exit(&vq->vq_lock);
 
-	return (pending * (&vs->vs_request_time_average >> 8))
+	return ((pending+1) * (&vs->vs_request_time_average >> 16))
 }
 
 void
