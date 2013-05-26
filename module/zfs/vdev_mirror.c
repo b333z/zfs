@@ -299,7 +299,7 @@ vdev_mirror_child_select(zio_t *zio)
 	if ( pending_lowest_child != -1 )
 	{
 		if (zfs_vdev_mirror_pending_balance_debug)
-			printk(" select: %d -> %d\n", pending_lowest_child, pending_lowest_count);
+			printk(" select: %d -> %lld\n", pending_lowest_child, pending_lowest_count);
 		return (pending_lowest_child);
 	}
 
