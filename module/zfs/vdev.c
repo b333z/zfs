@@ -1956,11 +1956,16 @@ vdev_pending_queued(vdev_t *vd)
 	vdev_queue_t *vq = &vd->vdev_queue;
 	vdev_stat_t *vs = &vd->vdev_stat;
 
+	// Ensure all vdevs are periodically re-evaluated
+	if ( spa_get_random(4096) == 1 ) {
+		return (0);
+	}
+
 	mutex_enter(&vq->vq_lock);
 	pending = avl_numnodes(&vq->vq_pending_tree);
 	mutex_exit(&vq->vq_lock);
 	pending++;
-	estimate = vs->vs_request_time_average >> 16;
+	estimate = vs->vs_request_time_average[ZIO_TYPE_READ] >> 16;
 	estimate = estimate * pending;
 	return (estimate);
 }
@@ -2524,6 +2529,23 @@ vdev_get_stats(vdev_t *vd, vdev_stat_t *vs)
 	if (vd->vdev_ops->vdev_op_leaf)
 		vs->vs_rsize += VDEV_LABEL_START_SIZE + VDEV_LABEL_END_SIZE;
 	vs->vs_esize = vd->vdev_max_asize - vd->vdev_asize;
+
+	if (vd->vdev_children > 0)
+	{
+		for (t = 0; t < ZIO_TYPES; t++)
+			vs->vs_request_time_average[t] = 0;
+		for (c = 0; c < vd->vdev_children; c++) {
+			vdev_t *cvd = vd->vdev_child[c];
+			vdev_stat_t *cvs = &cvd->vdev_stat;
+
+			for (t = 0; t < ZIO_TYPES; t++) {
+				vs->vs_request_time_average[t] += cvs->vs_request_time_average[t];
+			}
+		}
+		for (t = 0; t < ZIO_TYPES; t++) {
+			vs->vs_request_time_average[t] = (vs->vs_request_time_average[t] / vd->vdev_children);
+		}
+	}
 	mutex_exit(&vd->vdev_stat_lock);
 
 	/*
@@ -2540,6 +2562,7 @@ vdev_get_stats(vdev_t *vd, vdev_stat_t *vs)
 				vs->vs_ops[t] += cvs->vs_ops[t];
 				vs->vs_bytes[t] += cvs->vs_bytes[t];
 			}
+
 			cvs->vs_scan_removing = cvd->vdev_removing;
 			mutex_exit(&vd->vdev_stat_lock);
 		}
@@ -2549,10 +2572,14 @@ vdev_get_stats(vdev_t *vd, vdev_stat_t *vs)
 void
 vdev_clear_stats(vdev_t *vd)
 {
+	int c, t;
 	mutex_enter(&vd->vdev_stat_lock);
 	vd->vdev_stat.vs_space = 0;
 	vd->vdev_stat.vs_dspace = 0;
 	vd->vdev_stat.vs_alloc = 0;
+	for (c = 0; c < vd->vdev_children; c++)
+		for (t = 0; t < ZIO_TYPES; t++)
+			vd->vdev_stat.vs_request_time_average[t] = 0;
 	mutex_exit(&vd->vdev_stat_lock);
 }
 
@@ -2631,7 +2658,11 @@ vdev_stat_update(zio_t *zio, uint64_t psize)
 
 		vs->vs_ops[type]++;
 		vs->vs_bytes[type] += psize;
-		vs->vs_request_time_average += ((uint64_t)(ddi_get_lbolt64() - zio->io_timestamp) << 8) - (vs->vs_request_time_average >> 16);
+
+		if ( vs->vs_request_time_average[type] == 0 )  /* first read, seed the average ( sample * 256 ) */
+			vs->vs_request_time_average[type] = ((uint64_t)(ddi_get_lbolt64() - zio->io_timestamp)) << 16;
+		else
+			vs->vs_request_time_average[type] += ((uint64_t)(ddi_get_lbolt64() - zio->io_timestamp) << 8) - (vs->vs_request_time_average[type] >> 16);
 
 		mutex_exit(&vd->vdev_stat_lock);
 		return;

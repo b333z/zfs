@@ -2181,15 +2181,15 @@ print_iostat_separator(iostat_cbdata_t *cb)
 
 	for (i = 0; i < cb->cb_namewidth; i++)
 		(void) printf("-");
-	(void) printf("  -----  -----  -----  -----  -----  -----\n");
+	(void) printf("  -----  -----  -----  -----  -----  -----  -----  -----\n");
 }
 
 static void
 print_iostat_header(iostat_cbdata_t *cb)
 {
-	(void) printf("%*s     capacity     operations    bandwidth\n",
+	(void) printf("%*s     capacity     operations    bandwidth      reqtime\n",
 	    cb->cb_namewidth, "");
-	(void) printf("%-*s  alloc   free   read  write   read  write\n",
+	(void) printf("%-*s  alloc   free   read  write   read  write   read  write\n",
 	    cb->cb_namewidth, "pool");
 	print_iostat_separator(cb);
 }
@@ -2265,6 +2265,9 @@ print_vdev_stats(zpool_handle_t *zhp, const char *name, nvlist_t *oldnv,
 
 	print_one_stat((uint64_t)(scale * (newvs->vs_bytes[ZIO_TYPE_WRITE] -
 	    oldvs->vs_bytes[ZIO_TYPE_WRITE])));
+
+	print_one_stat((uint64_t)oldvs->vs_request_time_average[ZIO_TYPE_READ] >> 16);
+	print_one_stat((uint64_t)oldvs->vs_request_time_average[ZIO_TYPE_WRITE] >> 16);
 
 	(void) printf("\n");
 

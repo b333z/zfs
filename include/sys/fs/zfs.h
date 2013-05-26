@@ -707,7 +707,7 @@ typedef struct vdev_stat {
 	uint64_t	vs_self_healed;		/* self-healed bytes	*/
 	uint64_t	vs_scan_removing;	/* removing?	*/
 	uint64_t	vs_scan_processed;	/* scan processed bytes	*/
-	uint64_t	vs_request_time_average;/* avg. request time <<8*/
+	uint64_t	vs_request_time_average[ZIO_TYPES];/* avg. request time <<8*/
 } vdev_stat_t;
 
 /*
