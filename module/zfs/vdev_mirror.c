@@ -225,7 +225,7 @@ vdev_mirror_child_select(zio_t *zio)
 	mirror_child_t *mc;
 	uint64_t txg = zio->io_txg;
 	int pending_lowest_child = -1;
-	int pending_lowest_count = UINT64_MAX;
+	uint64_t pending_lowest_count = UINT64_MAX;
 	int i, c;
 	uint64_t pending;
 
