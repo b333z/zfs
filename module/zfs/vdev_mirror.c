@@ -225,7 +225,7 @@ vdev_mirror_child_select(zio_t *zio)
 	mirror_child_t *mc;
 	uint64_t txg = zio->io_txg;
 	int pending_lowest_child = -1;
-	int pending_lowest_count = INT_MAX;
+	int pending_lowest_count = UINT64_MAX;
 	int i, c;
 	uint64_t pending;
 
@@ -259,7 +259,7 @@ vdev_mirror_child_select(zio_t *zio)
 				return (c);
 			pending = vdev_pending_queued(mc->mc_vd);
 			if (zfs_vdev_mirror_pending_balance_debug)
-				printk(" child[%d] - pending: %d ", c, pending);
+				printk(" child[%d] - pending: %ull ", c, pending);
 			if (pending == 0)
 			{
 				if (zfs_vdev_mirror_pending_balance_debug)
