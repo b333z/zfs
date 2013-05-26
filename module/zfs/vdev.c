@@ -1959,8 +1959,7 @@ vdev_pending_queued(vdev_t *vd)
 	mutex_enter(&vq->vq_lock);
 	pending = avl_numnodes(&vq->vq_pending_tree);
 	mutex_exit(&vq->vq_lock);
-	if (zfs_vdev_mirror_pending_balance_debug)
-		printk(" requests[%d] - estimate: %lld ", pending, vs->vs_request_time_average >> 16);
+	printk(" requests[%d] - estimate: %lld ", pending, vs->vs_request_time_average >> 16);
 	pending++;
 	estimate = vs->vs_request_time_average >> 16;
 	estimate = estimate * pending;
