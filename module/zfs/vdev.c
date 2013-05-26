@@ -1960,8 +1960,8 @@ vdev_pending_queued(vdev_t *vd)
 	pending = avl_numnodes(&vq->vq_pending_tree);
 	mutex_exit(&vq->vq_lock);
 	pending++;
-	estimate = &vs->vs_request_time_average >> 16;
-	estimate =* pending;
+	estimate = vs->vs_request_time_average >> 16;
+	estimate = estimate * pending;
 	return (estimate);
 }
 
@@ -2631,7 +2631,7 @@ vdev_stat_update(zio_t *zio, uint64_t psize)
 
 		vs->vs_ops[type]++;
 		vs->vs_bytes[type] += psize;
-		vs->vs_request_time_average += ((uint64_t)(ddi_get_lbolt64() - &zio->io_timestamp) << 8) - (&vs->vs_request_time_average >> 16);
+		vs->vs_request_time_average += ((uint64_t)(ddi_get_lbolt64() - zio->io_timestamp) << 8) - (vs->vs_request_time_average >> 16);
 
 		mutex_exit(&vd->vdev_stat_lock);
 		return;
