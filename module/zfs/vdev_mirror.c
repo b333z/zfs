@@ -259,7 +259,7 @@ vdev_mirror_child_select(zio_t *zio)
 				return (c);
 			pending = vdev_pending_queued(mc->mc_vd);
 			if (zfs_vdev_mirror_pending_balance_debug)
-				printk(" child[%d] - pending: %ull ", c, pending);
+				printk(" child[%d] - pending: %lld ", c, pending);
 			if (pending == 0)
 			{
 				if (zfs_vdev_mirror_pending_balance_debug)
