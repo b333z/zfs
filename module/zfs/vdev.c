@@ -1957,12 +1957,15 @@ vdev_pending_queued(vdev_t *vd)
 	vdev_stat_t *vs = &vd->vdev_stat;
 
 	mutex_enter(&vq->vq_lock);
+	/*	
 	printk(" pending [d:%ld r:%ld w:%ld p:%ld",
 		avl_numnodes(&vq->vq_deadline_tree),
 		avl_numnodes(&vq->vq_read_tree),
 		avl_numnodes(&vq->vq_write_tree),
 		avl_numnodes(&vq->vq_pending_tree));
 	pending = avl_numnodes(&vq->vq_deadline_tree) + avl_numnodes(&vq->vq_read_tree) + avl_numnodes(&vq->vq_write_tree) + avl_numnodes(&vq->vq_pending_tree);
+	*/
+	pending = avl_numnodes(&vq->vq_pending_tree);
 	mutex_exit(&vq->vq_lock);
 	pending++;
 	//printk(" requests[%d] - estimate: %lld ", (int)pending, ((uint64_t)vs->vs_request_time_average >> 8));
