@@ -34,7 +34,6 @@
 #include <sys/fs/zfs.h>
 
 int zfs_vdev_mirror_pending_balance = 0;
-int zfs_vdev_mirror_pending_balance_debug = 0;
 
 /*
  * Virtual device vector for mirroring.
@@ -260,12 +259,9 @@ vdev_mirror_child_select(zio_t *zio)
 				pending_lowest_count = pending;
 				pending_lowest_child = c;
 			}
-			else if (pending == pending_lowest_count)
-			{
+			else if (pending == pending_lowest_count) {
 				if ( c == mm->mm_preferred)
-				{
 					pending_lowest_child = c;
-				}
 			}
 			continue;
 		}
@@ -279,9 +275,7 @@ vdev_mirror_child_select(zio_t *zio)
 	 * and return the child with smallest queue.
 	 */
 	if ( pending_lowest_child != -1 )
-	{
 		return (pending_lowest_child);
-	}
 
 	/*
 	 * Every device is either missing or has this txg in its DTL.
