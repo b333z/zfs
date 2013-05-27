@@ -253,8 +253,7 @@ vdev_mirror_child_select(zio_t *zio)
 			if (!zfs_vdev_mirror_pending_balance)	/* balance disabled */
 				return (c);
 			pending = vdev_pending_queued(mc->mc_vd);
-			if (pending == 0)
-			{
+			if (pending == 0) {
 				return (c);
 			}
 			if (pending < pending_lowest_count) {
@@ -530,7 +529,5 @@ vdev_ops_t vdev_spare_ops = {
 
 #if defined(_KERNEL) && defined(HAVE_SPL)
 module_param(zfs_vdev_mirror_pending_balance, int, 0644);
-MODULE_PARM_DESC(zfs_vdev_mirror_pending_balance, "Balance reads from mirror vdev based on pending queue depth");
-module_param(zfs_vdev_mirror_pending_balance_debug, int, 0644);
-MODULE_PARM_DESC(zfs_vdev_mirror_pending_balance_debug, "Enable Debug on: Balance reads from mirror vdev based on pending queue depth");
+MODULE_PARM_DESC(zfs_vdev_mirror_pending_balance, "Balance reads from mirror vdev based on member speed and pending queue depth");
 #endif
