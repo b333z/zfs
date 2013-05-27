@@ -1957,18 +1957,9 @@ vdev_pending_queued(vdev_t *vd)
 	vdev_stat_t *vs = &vd->vdev_stat;
 
 	mutex_enter(&vq->vq_lock);
-	/*	
-	printk(" pending [d:%ld r:%ld w:%ld p:%ld",
-		avl_numnodes(&vq->vq_deadline_tree),
-		avl_numnodes(&vq->vq_read_tree),
-		avl_numnodes(&vq->vq_write_tree),
-		avl_numnodes(&vq->vq_pending_tree));
-	pending = avl_numnodes(&vq->vq_deadline_tree) + avl_numnodes(&vq->vq_read_tree) + avl_numnodes(&vq->vq_write_tree) + avl_numnodes(&vq->vq_pending_tree);
-	*/
 	pending = avl_numnodes(&vq->vq_pending_tree);
 	mutex_exit(&vq->vq_lock);
 	pending++;
-	//printk(" requests[%d] - estimate: %lld ", (int)pending, ((uint64_t)vs->vs_request_time_average >> 8));
 	estimate = vs->vs_request_time_average >> 8;
 	estimate = estimate * pending;
 	return (estimate);
@@ -2641,7 +2632,6 @@ vdev_stat_update(zio_t *zio, uint64_t psize)
 		vs->vs_ops[type]++;
 		vs->vs_bytes[type] += psize;
 		if (zio->io_timestamp > 0) {
-			//printk(" request end: current average: %lld this: %lld \n", vs->vs_request_time_average, (uint64_t)(ddi_get_lbolt64() - zio->io_timestamp));
 			vs->vs_request_time_average += ((uint64_t)(ddi_get_lbolt64() - zio->io_timestamp + 1) << 8) - (vs->vs_request_time_average >> 8);
 		}
 		mutex_exit(&vd->vdev_stat_lock);
