@@ -2632,6 +2632,7 @@ vdev_stat_update(zio_t *zio, uint64_t psize)
 
 		vs->vs_ops[type]++;
 		vs->vs_bytes[type] += psize;
+		printk(" request end: current average: %lld new: %lld ", vs->vs_request_time_average >> 16, (uint64_t)(ddi_get_lbolt64() - zio->io_timestamp));
 		vs->vs_request_time_average += ((uint64_t)(ddi_get_lbolt64() - zio->io_timestamp) << 8) - (vs->vs_request_time_average >> 8);
 
 		mutex_exit(&vd->vdev_stat_lock);
