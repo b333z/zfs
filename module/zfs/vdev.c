@@ -1957,7 +1957,7 @@ vdev_pending_queued(vdev_t *vd)
 	vdev_stat_t *vs = &vd->vdev_stat;
 
 	mutex_enter(&vq->vq_lock);
-	printk(" pending [d:%lld r:%lld w:%lld p:%lld",
+	printk(" pending [d:%ld r:%ld w:%ld p:%ld",
 		avl_numnodes(&vq->vq_deadline_tree),
 		avl_numnodes(&vq->vq_read_tree),
 		avl_numnodes(&vq->vq_write_tree),
